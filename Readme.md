@@ -1,4 +1,4 @@
-# Encrypt Files
+# Cifrado de archivos con cryptography
 encripta archivos de forma de una forma sencilla
 
     dist>hidden.exe
