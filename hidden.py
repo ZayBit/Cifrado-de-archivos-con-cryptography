@@ -1,7 +1,8 @@
 import os
+import re
 from cryptography.fernet import Fernet
-import time
 key = ''
+path = './'
 def encriptado(fileName,key):
     f = Fernet(key)
     with open(fileName,'rb') as file:
@@ -14,13 +15,13 @@ def desencriptado(fileName,key):
         data = f.decrypt(file.read())
     with open(fileName,'wb') as file:
         file.write(data)
-if(os.path.isfile('./password.txt') and os.path.isfile('./key.key')):
-    with open('./key.key','rb') as file_key:
+if(os.path.isfile(path+'password.txt') and os.path.isfile(path+'key.key')):
+    with open(path+'key.key','rb') as file_key:
         key = file_key.read()
-    desencriptado('./password.txt',key)
-    with open('./password.txt','r') as txt:
+    desencriptado(path+'password.txt',key)
+    with open(path+'password.txt','r') as txt:
         password = txt.read()
-    encriptado('./password.txt',key)
+    encriptado(path+'password.txt',key)
     while True:
         getPass = input('Password: ')
         if(getPass != password):
@@ -38,10 +39,8 @@ def createKey():
     return loadKey()
 enc_or_dec = False
 while True:
-    dir = os.listdir('./')
-    folders = []
-    if(os.path.isfile('./key.key') == True):
-        with open('./key.key','rb') as file_key:
+    if(os.path.isfile(path+'key.key') == True):
+        with open(path+'key.key','rb') as file_key:
             key = file_key.read()
         print('Desencriptar: 1') 
         print('Salir: 2')
@@ -60,38 +59,16 @@ while True:
             key = createKey()
         elif(res == '2'):
             exit()
-    in_folders = False
-    for file in dir:
-        root,extension = os.path.splitext(file)
-        print(file)
-        if(extension):
-            if(str(root) != 'hidden' and str(root) != 'key'):
-                if(enc_or_dec):
-                    encriptado(file,key)
-                    print(str(file)+' encriptado!.')
-                else:
-                    desencriptado(file,key)
-                    print(str(file)+' desencriptado!.')
-        else:
-            folders.append(root)
-    time.sleep(1)
-    n = 0
-    if(len(folders) > 0):
-        in_folders = True
-        for folder_name in folders:
-            dir = os.listdir('./'+folder_name)
-            for file in dir:
-                file_dir = folder_name+'/'+file
-                root,extension = os.path.splitext(file_dir)
-                if(extension):
+    for root, directories, files in os.walk(path):
+        for name in files:
+            if not re.search('node_modules',root) and not re.search('.git',root):
+                if not name == 'hidden.exe' and not name == 'key.key' and not name == 'hidden.py':
+                    pathFile = os.path.normpath(root + "/" + name)
                     if(enc_or_dec):
-                        encriptado(file_dir,key)
-                        print(str(file_dir)+' encriptado!.')
+                        encriptado(pathFile,key)
+                        print(str(pathFile)+' encriptado!.')
                     else:
-                        desencriptado(file_dir,key)
-                        print(str(file_dir)+' desencriptado!.')
-            n = n+1
-            if(n == len( folders)):
-                in_folders = False
-    if(enc_or_dec == False and in_folders == False):
+                        desencriptado(pathFile,key)
+                        print(str(pathFile)+' desencriptado!.')
+    if(enc_or_dec == False):
         os.remove('./key.key')
